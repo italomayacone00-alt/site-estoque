@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="mb-4 header-container">
+        <h1>⚙️ Gerenciamento</h1>
+        <p class="text-muted mb-0">Ferramentas de backup, manutenção e importação.</p>
+    </div>
+
+    <!-- 1. IMPORTAÇÃO DE ESTOQUE (CSV) -->
+    <h5 class="mb-3 text-warning"><i class="bi bi-file-earmark-spreadsheet"></i> Importar Estoque (Planilha)</h5>
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-7">
+                    <h5 class="fw-bold">Preencher via Planilha CSV</h5>
+                    <p class="text-muted mb-3">
+                        A forma mais segura de importar dados. <br>
+                        1. Baixe nosso modelo. <br>
+                        2. Preencha no Excel com seus produtos. <br>
+                        3. Salve como <strong>CSV (Separado por vírgulas)</strong> e envie aqui.
+                    </p>
+                    <!-- Botão para baixar o modelo vazio -->
+                    <a href="{{ url_for('baixar_modelo') }}" class="btn btn-outline-dark btn-sm mb-3">
+                        <i class="bi bi-download"></i> Baixar Modelo de Planilha
+                    </a>
+                </div>
+                <div class="col-md-5">
+                    <!-- Formulário de Upload -->
+                    <form action="{{ url_for('importar_csv') }}" method="POST" enctype="multipart/form-data">
+                        <div class="mb-2">
+                            <input type="file" name="arquivo_csv" class="form-control" accept=".csv" required>
+                        </div>
+                        <button type="submit" class="btn btn-warning text-dark fw-bold w-100">
+                            <i class="bi bi-upload"></i> Importar Agora
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. EXPORTAÇÃO DE DADOS (BACKUP) -->
+    <!-- (MANTENHA ESTA PARTE IGUAL AO CÓDIGO ANTERIOR) -->
+    <h5 class="mb-3 text-primary"><i class="bi bi-cloud-download"></i> Backup de Dados</h5>
+    <div class="row mb-5">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3 text-success"><i class="bi bi-box-seam display-4"></i></div>
+                    <h5>Produtos</h5>
+                    <a href="{{ url_for('exportar', tipo='produtos') }}" class="btn btn-outline-success w-100">Baixar CSV</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3 text-primary"><i class="bi bi-receipt display-4"></i></div>
+                    <h5>Vendas</h5>
+                    <a href="{{ url_for('exportar', tipo='vendas') }}" class="btn btn-outline-primary w-100">Baixar CSV</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <div class="mb-3 text-info"><i class="bi bi-people display-4"></i></div>
+                    <h5>Clientes</h5>
+                    <a href="{{ url_for('exportar', tipo='clientes') }}" class="btn btn-outline-info w-100">Baixar CSV</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. ZONA DE PERIGO -->
+    <h5 class="mb-3 text-danger"><i class="bi bi-exclamation-triangle"></i> Zona de Perigo</h5>
+    <div class="card border-danger mb-3">
+        <div class="card-body d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="text-danger fw-bold">Limpar Histórico de Vendas</h5>
+                <p class="mb-0 text-muted">Isso apagará todas as vendas. O estoque não muda.</p>
+            </div>
+            <a href="{{ url_for('limpar_vendas') }}" class="btn btn-danger" onclick="return confirm('Tem certeza?')">
+                <i class="bi bi-trash3-fill"></i> Apagar Tudo
+            </a>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6"> <!-- Largura ajustada igual ao de Produtos -->
+            
+            <div class="card shadow card-form">
+                <!-- Alterado de bg-dark para bg-primary (Azul) para manter padrão -->
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {{ '✏️ Editar Cliente' if cliente else '👤 Novo Cliente' }}
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="POST">
+                        
+                        <!-- DADOS PESSOAIS -->
+                        <h5 class="text-muted mb-3">Dados Pessoais</h5>
+
+                        <div class="mb-3">
+                            <label class="form-label">Nome Completo *</label>
+                            <input type="text" class="form-control" name="nome" 
+                                   placeholder="Ex: Maria Silva"
+                                   value="{{ cliente.nome if cliente else '' }}" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Telefone / WhatsApp</label>
+                                <input type="text" class="form-control" name="telefone" 
+                                       placeholder="(XX) 99999-9999" 
+                                       value="{{ cliente.telefone if cliente else '' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" name="email" 
+                                       placeholder="email@exemplo.com" 
+                                       value="{{ cliente.email if cliente else '' }}">
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- ENDEREÇO -->
+                        <h5 class="text-muted mb-3">Localização</h5>
+
+                        <div class="mb-4">
+                            <label class="form-label">Cidade</label>
+                            <input type="text" class="form-control" name="cidade" 
+                                   placeholder="Ex: São Paulo - SP" 
+                                   value="{{ cliente.cidade if cliente else '' }}">
+                        </div>
+
+                        <!-- BOTÕES (Padronizados com o de Produtos) -->
+                        <div class="d-grid gap-2 mt-2">
+                            <!-- Botão Azul (Primary) -->
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                                {{ '💾 Salvar Cliente' if cliente else '✅ Cadastrar Cliente' }}
+                            </button>
+                            <a href="{{ url_for('clientes') }}" class="btn btn-outline-secondary border-0">
+                                Cancelar
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}

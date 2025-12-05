@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6"> <!-- Largura ajustada para foco no centro -->
+            
+            <div class="card shadow card-form">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        {{ '✏️ Editar Produto' if produto else '✨ Novo Produto' }}
+                    </h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="POST">
+                        
+                        <!-- 1. DADOS PRINCIPAIS -->
+                        <h5 class="text-muted mb-3">Informações Básicas</h5>
+
+                        <!-- Campo Nome -->
+                        <div class="mb-3">
+                            <label for="nome" class="form-label">Nome do Produto *</label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   placeholder="Ex: Camiseta Branca M"
+                                   value="{{ produto.nome if produto else '' }}" required>
+                        </div>
+
+                        <div class="row">
+                            <!-- Campo Quantidade -->
+                            <div class="col-md-6 mb-3">
+                                <label for="quantidade" class="form-label">Quantidade Atual *</label>
+                                <input type="number" class="form-control" id="quantidade" name="quantidade" 
+                                       placeholder="0"
+                                       value="{{ produto.quantidade if produto else '' }}" required>
+                            </div>
+
+                            <!-- Campo Validade -->
+                            <div class="col-md-6 mb-3">
+                                <label for="validade" class="form-label">Data de Validade</label>
+                                <input type="date" class="form-control" id="validade" name="validade" 
+                                       value="{{ produto.validade if produto else '' }}">
+                                <div class="form-text text-muted" style="font-size: 0.8rem;">Opcional</div>
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- 2. DADOS FINANCEIROS -->
+                        <h5 class="text-muted mb-3">Valores</h5>
+
+                        <div class="row">
+                            <!-- Campo Preço de Custo (Interno) -->
+                            <div class="col-md-6 mb-3">
+                                <label for="preco_compra" class="form-label text-secondary">Preço de Custo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text text-muted bg-light">R$</span>
+                                    <input type="number" step="0.01" class="form-control bg-light" id="preco_compra" name="preco_compra" 
+                                           placeholder="0.00"
+                                           value="{{ produto.preco_compra if produto and produto.preco_compra else '' }}">
+                                </div>
+                                <div class="form-text">Quanto você pagou.</div>
+                            </div>
+
+                            <!-- Campo Preço de Venda (Público) -->
+                            <div class="col-md-6 mb-4">
+                                <label for="preco" class="form-label fw-bold text-success">Preço de Venda *</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-success text-white border-success">R$</span>
+                                    <input type="number" step="0.01" class="form-control border-success fw-bold" id="preco" name="preco" 
+                                           placeholder="0.00"
+                                           value="{{ produto.preco if produto else '' }}" required>
+                                </div>
+                                <div class="form-text">Valor para o cliente.</div>
+                            </div>
+                        </div>
+
+                        <!-- Botões de Ação -->
+                        <div class="d-grid gap-2 mt-2">
+                            <button type="submit" class="btn btn-primary btn-lg shadow-sm">
+                                {{ '💾 Salvar Alterações' if produto else '✅ Cadastrar Produto' }}
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary border-0">
+                                Cancelar
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,209 @@
+/* =========================================
+   1. CORREÇÕES DE COMPATIBILIDADE
+   ========================================= */
+html {
+    -webkit-text-size-adjust: 100%; /* Chrome, Android */
+    text-size-adjust: 100%;        /* Padrão moderno */
+}
+
+/* =========================================
+   2. CONFIGURAÇÕES GERAIS
+   ========================================= */
+body {
+    background-color: #f0f2f5; /* Fundo cinza claro */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
+    overflow-x: hidden; /* Evita rolagem horizontal indesejada */
+    
+    /* Correções de avisos do console */
+    text-align: -webkit-match-parent;
+    text-align: match-parent;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+h1, h2, h3, h4 {
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+/* =========================================
+   3. MENU LATERAL (SIDEBAR) RESPONSIVO
+   ========================================= */
+#wrapper {
+    display: flex;
+    width: 100%;
+    align-items: stretch;
+    transition: all 0.3s ease;
+}
+
+#sidebar-wrapper {
+    min-width: 250px;
+    max-width: 250px;
+    min-height: 100vh; /* Altura total da tela */
+    background: linear-gradient(180deg, #212529, #1a1d20); /* Fundo Preto */
+    transition: margin 0.3s ease;
+    z-index: 1000; /* Garante que fique sobre o conteúdo no mobile */
+}
+
+/* --- COMPORTAMENTO DO MENU --- */
+
+/* DESKTOP (Telas grandes): Menu sempre visível */
+@media (min-width: 769px) {
+    #sidebar-wrapper { 
+        margin-left: 0; 
+    }
+    #page-content-wrapper { 
+        width: 100%; 
+    }
+    /* Se tiver a classe toggled no desktop, ele esconde (opcional) */
+    #wrapper.toggled #sidebar-wrapper { 
+        margin-left: -250px; 
+    }
+}
+
+/* MOBILE (Telas pequenas): Menu escondido por padrão */
+@media (max-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: -250px; /* Começa escondido */
+        position: fixed; /* Fixo para sobrepor o conteúdo */
+        height: 100%;
+        box-shadow: 5px 0 15px rgba(0,0,0,0.5); /* Sombra para destacar */
+    }
+    
+    /* Quando clica no botão (classe toggled), o menu entra na tela */
+    #wrapper.toggled #sidebar-wrapper {
+        margin-left: 0;
+    }
+    
+    /* Escurece levemente o fundo quando o menu abre (opcional) */
+    #wrapper.toggled #page-content-wrapper {
+        opacity: 0.9;
+    }
+}
+
+/* Itens do Menu */
+#sidebar-wrapper .list-group-item {
+    font-size: 1.1rem;
+    padding-left: 30px;
+    transition: all 0.2s;
+}
+
+#sidebar-wrapper .list-group-item:hover {
+    background-color: #343a40 !important;
+    padding-left: 35px; /* Movimento suave para a direita */
+    color: #fff !important;
+}
+
+#sidebar-wrapper .list-group-item.active {
+    background-color: #0d6efd !important; /* Azul Principal */
+    color: white !important;
+    border-left: 5px solid #86b7fe;
+}
+
+/* =========================================
+   4. ELEMENTOS VISUAIS DA PÁGINA
+   ========================================= */
+
+/* Caixa branca de cabeçalho */
+.header-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* --- TABELAS --- */
+/* Permite scroll horizontal na tabela em telas pequenas */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+    white-space: nowrap; /* Evita quebra de linha feia em células pequenas */
+}
+
+/* Efeito hover na linha da tabela */
+.table tbody tr {
+    transition: all 0.2s ease-in-out;
+}
+
+.table tbody tr:hover {
+    background-color: #fff;
+    transform: scale(1.005);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 10;
+    position: relative;
+    border-radius: 5px;
+}
+
+/* Alerta de Estoque Baixo (Linha Vermelha) */
+tr.estoque-baixo {
+    background-color: #fff5f5 !important;
+    border-left: 5px solid #dc3545;
+}
+
+tr.estoque-baixo td {
+    color: #a71d2a;
+    font-weight: 500;
+}
+
+/* =========================================
+   5. FORMULÁRIOS (Cards)
+   ========================================= */
+.card-form {
+    border: none;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+/* Cabeçalho do formulário */
+.card-form .card-header {
+    background: linear-gradient(135deg, #0d6efd, #0043a8); /* Gradiente Azul */
+    color: white;
+    padding: 20px;
+    border-bottom: none;
+    text-align: center;
+    font-weight: 600;
+}
+
+/* Inputs e Campos de Texto */
+.form-control, .input-group-text {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    background-color: #f8f9fa;
+}
+
+.form-control:focus {
+    background-color: #fff;
+    box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.15); /* Brilho azul */
+    border-color: #86b7fe;
+}
+
+/* =========================================
+   6. BOTÕES E PADRONIZAÇÃO DE CORES
+   ========================================= */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-lg {
+    padding: 12px 20px;
+}
+
+/* Força o botão "Verde" (btn-success) a ficar AZUL para combinar com o tema */
+.btn-success {
+    background-color: #0d6efd !important;
+    border-color: #0d6efd !important;
+}
+
+.btn-success:hover {
+    background-color: #0b5ed7 !important;
+    border-color: #0a58ca !important;
+}

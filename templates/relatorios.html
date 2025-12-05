@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    
+    <div class="mb-4 header-container">
+        <h1>📊 Relatórios Gerenciais</h1>
+        <p class="text-muted mb-0">Visão geral da saúde financeira e do estoque da loja.</p>
+    </div>
+
+    <!-- 1. CARTÕES DE RESUMO (KPIs) -->
+    <div class="row mb-4">
+        <!-- Faturamento -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-success text-white h-100">
+                <div class="card-body">
+                    <h6 class="text-uppercase opacity-75">Faturamento Total</h6>
+                    <h3 class="fw-bold">R$ {{ "%.2f"|format(total_faturamento) }}</h3>
+                    <small>{{ total_itens_vendidos }} itens vendidos</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Custo do Estoque -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-secondary text-white h-100">
+                <div class="card-body">
+                    <h6 class="text-uppercase opacity-75">Custo do Estoque</h6>
+                    <h3 class="fw-bold">R$ {{ "%.2f"|format(valor_estoque_custo) }}</h3>
+                    <small>Dinheiro investido parado</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Potencial de Venda -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-primary text-white h-100">
+                <div class="card-body">
+                    <h6 class="text-uppercase opacity-75">Valor de Venda (Estoque)</h6>
+                    <h3 class="fw-bold">R$ {{ "%.2f"|format(valor_estoque_venda) }}</h3>
+                    <small>Se vender tudo hoje</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lucro Projetado -->
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-info text-dark h-100">
+                <div class="card-body">
+                    <h6 class="text-uppercase opacity-75">Lucro Projetado</h6>
+                    <h3 class="fw-bold">R$ {{ "%.2f"|format(lucro_estimado) }}</h3>
+                    <small>Margem bruta potencial</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. GRÁFICOS (Lado a Lado) -->
+    <div class="row mb-4">
+        
+        <!-- Gráfico de Produtos Mais Vendidos -->
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white fw-bold">🏆 Produtos Mais Vendidos</div>
+                <div class="card-body">
+                    <canvas id="graficoProdutos"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráfico de Vendas por Dia -->
+        <div class="col-md-6 mb-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white fw-bold">📈 Evolução das Vendas (Por Dia)</div>
+                <div class="card-body">
+                    <canvas id="graficoVendas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. TABELA DE ALERTA (Estoque Crítico) -->
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-header bg-danger text-white fw-bold">
+            ⚠️ Alerta: Produtos com Estoque Baixo (Menos de 5 un.)
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th class="ps-4">Produto</th>
+                        <th>Quantidade</th>
+                        <th>Custo Unit.</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in estoque_baixo %}
+                    <tr>
+                        <td class="ps-4 fw-bold">{{ p.nome }}</td>
+                        <td class="text-danger fw-bold">{{ p.quantidade }} un.</td>
+                        <td>R$ {{ "%.2f"|format(p.preco_compra or 0) }}</td>
+                        <td>
+                            <a href="{{ url_for('editar', id=p.id) }}" class="btn btn-sm btn-outline-dark">Repor Estoque</a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="text-center py-3 text-success">
+                            <i class="bi bi-check-circle-fill"></i> Tudo certo! Nenhum produto com estoque crítico.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- IMPORTANDO CHART.JS (Biblioteca de Gráficos) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // -- CONFIGURAÇÃO DO GRÁFICO DE PRODUTOS (BARRA) --
+        const ctxProd = document.getElementById('graficoProdutos');
+        new Chart(ctxProd, {
+            type: 'bar',
+            data: {
+                labels: {{ grafico_prod_labels | tojson }}, // Pega dados do Python
+                datasets: [{
+                    label: 'Quantidade Vendida',
+                    data: {{ grafico_prod_values | tojson }},
+                    backgroundColor: 'rgba(13, 110, 253, 0.7)', // Azul
+                    borderColor: 'rgba(13, 110, 253, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+
+        // -- CONFIGURAÇÃO DO GRÁFICO DE VENDAS (LINHA) --
+        const ctxDia = document.getElementById('graficoVendas');
+        new Chart(ctxDia, {
+            type: 'line',
+            data: {
+                labels: {{ grafico_dia_labels | tojson }},
+                datasets: [{
+                    label: 'Faturamento (R$)',
+                    data: {{ grafico_dia_values | tojson }},
+                    borderColor: 'rgba(25, 135, 84, 1)', // Verde
+                    backgroundColor: 'rgba(25, 135, 84, 0.1)',
+                    fill: true,
+                    tension: 0.3 // Deixa a linha curva
+                }]
+            },
+            options: { scales: { y: { beginAtZero: true } } }
+        });
+    </script>
+
+{% endblock %}

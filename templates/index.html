@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <!-- Cabeçalho da Página -->
+    <div class="d-flex justify-content-between align-items-center mb-4 header-container">
+        <div>
+            <h1>📦 Gerenciador de Estoque</h1>
+            <p class="text-muted mb-0">Gerencie a entrada e saída de mercadorias.</p>
+        </div>
+        <a href="{{ url_for('adicionar') }}" class="btn btn-success btn-lg shadow-sm">
+            <i class="bi bi-plus-lg"></i> Novo Produto
+        </a>
+    </div>
+
+    <!-- Tabela de Produtos -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col" class="ps-4">ID</th>
+                        <th scope="col">Nome do Produto</th>
+                        <th scope="col">Qtd.</th>
+                        <th scope="col">Preço Unit.</th>
+                        <th scope="col" class="text-end pe-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for produto in produtos %}
+                    
+                    <!-- Lógica: Linha vermelha se estoque < 5 -->
+                    <tr class="{{ 'estoque-baixo' if produto.quantidade < 5 else '' }}">
+                        <td class="ps-4 text-muted">#{{ produto.id }}</td>
+                        <td class="fw-bold">{{ produto.nome }}</td>
+                        
+                        <!-- Destaque visual para a quantidade -->
+                        <td>
+                            {% if produto.quantidade < 5 %}
+                                <span class="badge bg-danger">BAIXO: {{ produto.quantidade }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ produto.quantidade }}</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>R$ {{ "%.2f"|format(produto.preco) }}</td>
+                        
+                        <td class="text-end pe-4">
+                            <!-- Botão Editar -->
+                            <a href="{{ url_for('editar', id=produto.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                                <i class="bi bi-pencil-square"></i> Editar
+                            </a>
+                            <!-- Botão Excluir -->
+                            <a href="{{ url_for('deletar', id=produto.id) }}" class="btn btn-sm btn-outline-danger" 
+                               onclick="return confirm('Tem certeza que deseja excluir {{ produto.nome }}?')" title="Excluir">
+                                <i class="bi bi-trash"></i> Excluir
+                            </a>
+                        </td>
+                    </tr>
+                    
+                    {% else %}
+                    <!-- Caso a lista esteja vazia -->
+                    <tr>
+                        <td colspan="5" class="text-center py-5">
+                            <h4 class="text-muted">Nenhum produto no estoque.</h4>
+                            <p class="text-secondary">Clique no botão "Novo Produto" para começar.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Rodapé simples -->
+    <footer class="mt-4 text-center text-muted text-small">
+        <p>Total de itens cadastrados: {{ produtos|length }}</p>
+    </footer>
+
+{% endblock %}

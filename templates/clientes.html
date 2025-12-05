@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <!-- Cabeçalho da Página (Igual ao Index) -->
+    <div class="d-flex justify-content-between align-items-center mb-4 header-container">
+        <div>
+            <h1>👥 Meus Clientes</h1>
+            <p class="text-muted mb-0">Gerencie sua base de contatos e endereços.</p>
+        </div>
+        <!-- Mantive azul (primary) para diferenciar visualmente do botão verde de produtos -->
+        <a href="{{ url_for('adicionar_cliente') }}" class="btn btn-primary btn-lg shadow-sm">
+            <i class="bi bi-person-plus-fill"></i> Novo Cliente
+        </a>
+    </div>
+
+    <!-- Tabela de Clientes -->
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <!-- Cabeçalho escuro para igualar ao Index -->
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col" class="ps-4">ID</th>
+                        <th scope="col">Nome Completo</th>
+                        <th scope="col">Telefone</th>
+                        <th scope="col">Email</th>
+                        <th scope="col">Cidade</th>
+                        <th scope="col" class="text-end pe-4">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cliente in clientes %}
+                    <tr>
+                        <td class="ps-4 text-muted">#{{ cliente.id }}</td>
+                        <td class="fw-bold">{{ cliente.nome }}</td>
+                        
+                        <td>
+                            {% if cliente.telefone %}
+                                {{ cliente.telefone }}
+                            {% else %}
+                                <span class="text-muted small">Não inf.</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            {% if cliente.email %}
+                                {{ cliente.email }}
+                            {% else %}
+                                <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td>
+                            {% if cliente.cidade %}
+                                <span class="badge bg-info text-dark border border-info bg-opacity-25">{{ cliente.cidade }}</span>
+                            {% else %}
+                                <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        <td class="text-end pe-4">
+                            <!-- Botão Editar (Igual ao Index) -->
+                            <a href="{{ url_for('editar_cliente', id=cliente.id) }}" class="btn btn-sm btn-outline-primary me-1" title="Editar">
+                                <i class="bi bi-pencil-square"></i> Editar
+                            </a>
+                            <!-- Botão Excluir (Igual ao Index) -->
+                            <a href="{{ url_for('deletar_cliente', id=cliente.id) }}" class="btn btn-sm btn-outline-danger" 
+                               onclick="return confirm('Tem certeza que deseja remover o cliente {{ cliente.nome }}?')" title="Excluir">
+                                <i class="bi bi-trash"></i> Excluir
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <!-- Caso a lista esteja vazia -->
+                    <tr>
+                        <td colspan="6" class="text-center py-5">
+                            <h4 class="text-muted">Nenhum cliente cadastrado.</h4>
+                            <p class="text-secondary">Clique no botão "Novo Cliente" para começar.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Rodapé interno -->
+    <footer class="mt-4 text-center text-muted text-small">
+        <p>Total de clientes: {{ clientes|length }}</p>
+    </footer>
+
+{% endblock %}

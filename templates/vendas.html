@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="d-flex justify-content-between align-items-center mb-4 header-container">
+        <div>
+            <h1>💰 Histórico de Vendas</h1>
+            <p class="text-muted mb-0">Registre saídas e controle o faturamento.</p>
+        </div>
+        <!-- Botão Verde para indicar Dinheiro/Venda -->
+        <a href="{{ url_for('nova_venda') }}" class="btn btn-success btn-lg shadow-sm">
+            <i class="bi bi-cart-plus-fill"></i> Nova Venda
+        </a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="ps-4">Data/Hora</th>
+                        <th>Produto</th>
+                        <th>Cliente</th>
+                        <th>Qtd.</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for venda in vendas %}
+                    <tr>
+                        <td class="ps-4 text-muted">{{ venda.data.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td class="fw-bold">{{ venda.produto.nome }}</td>
+                        <td>
+                            {% if venda.cliente %}
+                                <i class="bi bi-person text-secondary"></i> {{ venda.cliente.nome }}
+                            {% else %}
+                                <span class="text-muted small">Balcão (Sem cadastro)</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary">{{ venda.quantidade }}</span></td>
+                        <td class="fw-bold text-success">R$ {{ "%.2f"|format(venda.valor_total) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="5" class="text-center py-5">Nenhuma venda registrada hoje.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+{% endblock %}

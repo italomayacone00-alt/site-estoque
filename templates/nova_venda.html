@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            
+            <div class="card shadow card-form">
+                <!-- Cabeçalho Verde para diferenciar (Vendas) -->
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">💸 Registrar Venda</h4>
+                </div>
+                
+                <div class="card-body p-4">
+                    <form method="POST">
+                        
+                        <!-- SELEÇÃO DE PRODUTO -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Selecione o Produto *</label>
+                            <select name="produto_id" class="form-select form-control" required>
+                                <option value="" selected disabled>-- Escolha um item --</option>
+                                {% for p in produtos %}
+                                    <!-- Mostra o nome e quanto tem no estoque para ajudar -->
+                                    <option value="{{ p.id }}">
+                                        {{ p.nome }} (Preço: R$ {{ "%.2f"|format(p.preco) }} | Estoque: {{ p.quantidade }})
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="row">
+                            <!-- QUANTIDADE -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Quantidade *</label>
+                                <input type="number" name="quantidade" class="form-control" value="1" min="1" required>
+                            </div>
+
+                            <!-- CLIENTE (Opcional) -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Cliente (Opcional)</label>
+                                <select name="cliente_id" class="form-select form-control">
+                                    <option value="">-- Venda Avulsa / Balcão --</option>
+                                    {% for c in clientes %}
+                                        <option value="{{ c.id }}">{{ c.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info mt-2">
+                            <i class="bi bi-info-circle"></i> O valor total será calculado automaticamente e o estoque será baixado.
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success btn-lg shadow-sm">
+                                Confirmar Venda
+                            </button>
+                            <a href="{{ url_for('vendas') }}" class="btn btn-outline-secondary border-0">Cancelar</a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+{% endblock %}
