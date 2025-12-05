@@ -19,46 +19,74 @@
         <!-- ============================== -->
         <!-- BARRA LATERAL (PRETA)          -->
         <!-- ============================== -->
-        <div class="bg-dark text-white border-end" id="sidebar-wrapper">
+        <!-- Adicionei 'd-flex flex-column' para organizar o topo e o fundo -->
+        <div class="bg-dark text-white border-end min-vh-100 d-flex flex-column" id="sidebar-wrapper">
             
             <div class="sidebar-heading text-center py-4 fs-4 fw-bold border-bottom border-secondary">
                 Minha Loja 🚀
             </div>
             
+            <!-- LISTA DE LINKS (Fica no topo) -->
             <div class="list-group list-group-flush my-3">
-                <!-- 1. PRODUTOS -->
                 <a href="{{ url_for('index') }}" 
                    class="list-group-item list-group-item-action bg-dark text-white border-0 py-3 {{ 'active' if pagina_atual == 'estoque' else '' }}">
                     <i class="bi bi-box-seam me-2 fs-5"></i> Produtos
                 </a>
 
-                <!-- 2. CLIENTES -->
                 <a href="{{ url_for('clientes') }}" 
                    class="list-group-item list-group-item-action bg-dark text-white border-0 py-3 {{ 'active' if pagina_atual == 'clientes' else '' }}">
                     <i class="bi bi-people-fill me-2 fs-5"></i> Clientes
                 </a>
 
-                <!-- 3. VENDAS -->
                 <a href="{{ url_for('vendas') }}" 
                    class="list-group-item list-group-item-action bg-dark text-white border-0 py-3 {{ 'active' if pagina_atual == 'vendas' else '' }}">
                     <i class="bi bi-cart-check-fill me-2 fs-5"></i> Vendas
                 </a>
 
-                <!-- 4. RELATÓRIOS -->
                 <a href="{{ url_for('relatorios') }}" 
                    class="list-group-item list-group-item-action bg-dark text-white border-0 py-3 {{ 'active' if pagina_atual == 'relatorios' else '' }}">
                     <i class="bi bi-graph-up-arrow me-2 fs-5"></i> Relatórios
                 </a>
 
-                <!-- 5. GERENCIAMENTO -->
                 <a href="{{ url_for('gerenciamento') }}" 
                    class="list-group-item list-group-item-action bg-dark text-white border-0 py-3 {{ 'active' if pagina_atual == 'gerenciamento' else '' }}">
                     <i class="bi bi-gear-fill me-2 fs-5"></i> Gerenciamento
                 </a>
             </div>
             
-            <div class="mt-auto p-3 text-center">
-                <small class="text-muted">Versão 1.6</small>
+            <!-- ÁREA DO USUÁRIO (Fica no fundo - mt-auto empurra para baixo) -->
+            <div class="mt-auto">
+                
+                <!-- Perfil do Usuário -->
+                <div class="p-3 border-top border-secondary bg-black bg-opacity-25">
+                    <div class="d-flex align-items-center mb-3">
+                        <!-- Ícone de Perfil (Simulando Imagem) -->
+                        <div class="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white me-3" style="width: 40px; height: 40px;">
+                            <i class="bi bi-person-fill fs-5"></i>
+                        </div>
+                        <!-- Nome do Usuário -->
+                        <div style="line-height: 1.2;">
+                            <div class="fw-bold text-white">
+                                {% if current_user.is_authenticated %}
+                                    {{ current_user.username }}
+                                {% else %}
+                                    Visitante
+                                {% endif %}
+                            </div>
+                            
+                        </div>
+                    </div>
+                    
+                    <!-- Botão de Sair -->
+                    <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm w-100">
+                        <i class="bi bi-box-arrow-right me-1"></i> Sair do Sistema
+                    </a>
+                </div>
+                
+                <!-- Versão -->
+                <div class="text-center py-2 bg-dark">
+                    <small class="text-muted" style="font-size: 0.7rem;">Versão 1.7</small>
+                </div>
             </div>
 
         </div>
@@ -69,7 +97,6 @@
         <div id="page-content-wrapper" class="w-100 bg-light position-relative">
             
             <!-- Botão Menu (SÓ APARECE NO CELULAR) -->
-            <!-- Removemos a navbar branca e deixamos só o botão -->
             <button class="btn btn-dark d-md-none m-3 shadow" id="menu-toggle">
                 <i class="bi bi-list"></i> Menu
             </button>
@@ -97,29 +124,6 @@
                 {% block content %}{% endblock %}
                 
             </div>
-
-            <!-- ... outros links ... -->
-                
-                <!-- 5. GERENCIAMENTO -->
-                <a href="{{ url_for('gerenciamento') }}" 
-                   class="list-group-item list-group-item-action bg-dark text-white border-0 py-3 {{ 'active' if pagina_atual == 'gerenciamento' else '' }}">
-                    <i class="bi bi-gear-fill me-2 fs-5"></i> Gerenciamento
-                </a>
-            </div>
-            
-            <!-- ÁREA DO USUÁRIO (NOVO) -->
-            <div class="mt-auto p-3 border-top border-secondary">
-                <div class="d-flex align-items-center justify-content-between text-white mb-2">
-                    <span><i class="bi bi-person-circle"></i> {{ current_user.username }}</span>
-                </div>
-                <a href="{{ url_for('logout') }}" class="btn btn-outline-danger btn-sm w-100">
-                    <i class="bi bi-box-arrow-right"></i> Sair
-                </a>
-            </div>
-
-        </div>
-
-
         </div>
     </div>
 

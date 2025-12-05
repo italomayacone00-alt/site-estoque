@@ -1,20 +1,32 @@
 import csv
 import io
-import os
+import os  # <--- Essencial para ler configurações do Render
 import xml.etree.ElementTree as ET
 from flask import Flask, render_template, request, redirect, url_for, Response, flash
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-# --- IMPORTAÇÕES DE SEGURANÇA ---
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 
 app = Flask(__name__)
-# EM PRODUÇÃO (RENDER), USE UMA CHAVE COMPLEXA ALEATÓRIA
-app.secret_key = 'chave_super_secreta_e_complexa_do_sistema' 
 
-# --- CONFIGURAÇÃO DO BANCO ---
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///estoque.db'
+# ==========================================
+# 🔐 SEGURANÇA E CONFIGURAÇÃO (RENDER)
+# ==========================================
+
+# 1. SECRET_KEY
+# Tenta pegar a senha segura do Render. Se não achar (no seu PC), usa a 'chave_dev'.
+app.secret_key = os.environ.get('SECRET_KEY', 'chave_desenvolvimento_local_segura')
+
+# 2. BANCO DE DADOS
+# Tenta pegar o banco do Render (PostgreSQL). Se não achar, usa o SQLite local.
+database_url = os.environ.get('DATABASE_URL')
+
+# O Render fornece URL como 'postgres://', mas o SQLAlchemy precisa de 'postgresql://'
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///estoque.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -22,7 +34,7 @@ db = SQLAlchemy(app)
 # --- CONFIGURAÇÃO DE LOGIN ---
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = 'login' # Se não estiver logado, manda pra cá
+login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -32,11 +44,10 @@ def load_user(user_id):
 # MODELOS (TABELAS)
 # ==========================================
 
-# TABELA DE USUÁRIOS (NOVO)
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
-    password_hash = db.Column(db.String(200), nullable=False) # Guarda a senha criptografada
+    password_hash = db.Column(db.String(200), nullable=False)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -64,45 +75,31 @@ class Venda(db.Model):
     data = db.Column(db.DateTime, default=datetime.now)
     quantidade = db.Column(db.Integer, nullable=False)
     valor_total = db.Column(db.Float, nullable=False)
+    
     produto_id = db.Column(db.Integer, db.ForeignKey('produto.id'), nullable=False)
     cliente_id = db.Column(db.Integer, db.ForeignKey('cliente.id'), nullable=True)
+    
     produto = db.relationship('Produto')
     cliente = db.relationship('Cliente')
 
-# Cria tabelas
+# Cria tabelas (Importante: No Render, isso roda ao iniciar)
 with app.app_context():
     db.create_all()
 
 # ==========================================
-# CACHE BUSTING (Para atualizar CSS)
-# ==========================================
-@app.url_defaults
-def hashed_url_for_static_file(endpoint, values):
-    if 'static' == endpoint or endpoint.endswith('.static'):
-        filename = values.get('filename')
-        if filename:
-            static_folder = app.static_folder
-            file_path = os.path.join(static_folder, filename)
-            if os.path.exists(file_path):
-                values['v'] = int(os.stat(file_path).st_mtime)
-
-# ==========================================
-# ROTAS DE AUTENTICAÇÃO (LOGIN/REGISTRO)
+# ROTAS DE AUTENTICAÇÃO
 # ==========================================
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # Se já estiver logado, manda pro início
     if current_user.is_authenticated:
         return redirect(url_for('index'))
     
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
         user = User.query.filter_by(username=username).first()
         
-        # Verifica se o usuário existe e se a senha bate com o hash
         if user and user.check_password(password):
             login_user(user)
             return redirect(url_for('index'))
@@ -113,24 +110,20 @@ def login():
 
 @app.route('/registrar', methods=['GET', 'POST'])
 def registrar():
-    # Rota para criar o primeiro usuário. 
-    # DICA: Em produção, você pode proteger ou remover essa rota depois de criar seu admin.
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         
-        # Verifica se já existe
         if User.query.filter_by(username=username).first():
-            flash('Nome de usuário já existe.', 'danger')
+            flash('Usuário já existe.', 'danger')
             return redirect(url_for('registrar'))
         
         novo_user = User(username=username)
-        novo_user.set_password(password) # CRIPTOGRAFA A SENHA
-        
+        novo_user.set_password(password)
         db.session.add(novo_user)
         db.session.commit()
         
-        flash('Conta criada com sucesso! Faça login.', 'success')
+        flash('Conta criada! Faça login.', 'success')
         return redirect(url_for('login'))
         
     return render_template('registrar.html')
@@ -139,15 +132,15 @@ def registrar():
 @login_required
 def logout():
     logout_user()
-    flash('Você saiu do sistema.', 'info')
+    flash('Saiu com sucesso.', 'info')
     return redirect(url_for('login'))
 
 # ==========================================
-# ROTAS DO SISTEMA (TODAS PROTEGIDAS)
+# ROTAS DO SISTEMA (ESTOQUE)
 # ==========================================
 
 @app.route('/')
-@login_required # <--- CADEADO DE SEGURANÇA
+@login_required
 def index():
     produtos = Produto.query.all()
     return render_template('index.html', produtos=produtos, pagina_atual='estoque')
@@ -184,7 +177,7 @@ def editar(id):
         produto.preco_compra = float(p_compra) if p_compra else None
         produto.validade = request.form.get('validade')
         db.session.commit()
-        flash('Produto atualizado!', 'success')
+        flash('Atualizado!', 'success')
         return redirect(url_for('index'))
     return render_template('adicionar.html', produto=produto, pagina_atual='estoque')
 
@@ -194,7 +187,7 @@ def deletar(id):
     produto = Produto.query.get_or_404(id)
     db.session.delete(produto)
     db.session.commit()
-    flash('Produto removido.', 'success')
+    flash('Removido.', 'success')
     return redirect(url_for('index'))
 
 # --- CLIENTES ---
@@ -307,7 +300,7 @@ def relatorios():
     
     return render_template('relatorios.html', pagina_atual='relatorios', total_faturamento=total_faturamento, total_itens_vendidos=total_itens_vendidos, valor_estoque_custo=valor_estoque_custo, valor_estoque_venda=valor_estoque_venda, lucro_estimado=lucro_estimado_estoque, grafico_prod_labels=grafico_prod_labels, grafico_prod_values=grafico_prod_values, grafico_dia_labels=grafico_dia_labels, grafico_dia_values=grafico_dia_values, estoque_baixo=estoque_baixo)
 
-# --- GERENCIAMENTO ---
+# --- GERENCIAMENTO (CSV & MODELOS) ---
 @app.route('/gerenciamento')
 @login_required
 def gerenciamento():
@@ -337,7 +330,8 @@ def importar_csv():
         stream = io.StringIO(arquivo.stream.read().decode("UTF8"), newline=None)
         csv_input = csv.reader(stream)
         next(csv_input, None) 
-        count = 0
+        count_novos = 0
+        count_at = 0
         for row in csv_input:
             if not row or len(row) < 3: continue
             try:
@@ -352,12 +346,13 @@ def importar_csv():
                 if prod:
                     prod.quantidade += qtd
                     if preco_custo > 0: prod.preco_compra = preco_custo
+                    count_at += 1
                 else:
                     db.session.add(Produto(nome=nome, quantidade=qtd, preco=preco_venda, preco_compra=preco_custo, validade=validade))
-                count += 1
+                    count_novos += 1
             except ValueError: continue
         db.session.commit()
-        flash(f'Importação concluída! {count} itens processados.', 'success')
+        flash(f'Importação: {count_novos} novos, {count_at} atualizados.', 'success')
         return redirect(url_for('index'))
     except Exception as e:
         flash(f'Erro: {str(e)}', 'danger')
@@ -377,9 +372,9 @@ def exportar(tipo):
         filename = "vendas.csv"
         writer.writerow(['ID', 'Data', 'Produto', 'Cliente', 'Qtd', 'Total'])
         for i in Venda.query.all():
-            prod_nome = i.produto.nome if i.produto else "Removido"
-            cli_nome = i.cliente.nome if i.cliente else 'Balcão'
-            writer.writerow([i.id, i.data, prod_nome, cli_nome, i.quantidade, i.valor_total])
+            p_nome = i.produto.nome if i.produto else "Removido"
+            c_nome = i.cliente.nome if i.cliente else 'Balcão'
+            writer.writerow([i.id, i.data, p_nome, c_nome, i.quantidade, i.valor_total])
     elif tipo == 'clientes':
         filename = "clientes.csv"
         writer.writerow(['ID', 'Nome', 'Telefone', 'Email', 'Cidade'])
@@ -397,8 +392,19 @@ def limpar_vendas():
         return redirect(url_for('gerenciamento'))
     except:
         db.session.rollback()
-        flash('Erro ao limpar.', 'danger')
+        flash('Erro.', 'danger')
         return redirect(url_for('gerenciamento'))
+
+# Cache Busting para atualizar CSS no navegador
+@app.url_defaults
+def hashed_url_for_static_file(endpoint, values):
+    if 'static' == endpoint or endpoint.endswith('.static'):
+        filename = values.get('filename')
+        if filename:
+            static_folder = app.static_folder
+            file_path = os.path.join(static_folder, filename)
+            if os.path.exists(file_path):
+                values['v'] = int(os.stat(file_path).st_mtime)
 
 if __name__ == "__main__":
     app.run(debug=True)
